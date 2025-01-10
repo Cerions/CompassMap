@@ -15,3 +15,8 @@ void UCMEventManager::OnCharacterRefSetEvent(ACompassMapProjectCharacter* PC)
 {
 	OnCharacterRefSet.Broadcast(PC);
 }
+
+void UCMEventManager::OnPOIsActivatedEvent()
+{
+	OnPOIsActivated.Broadcast();
+}

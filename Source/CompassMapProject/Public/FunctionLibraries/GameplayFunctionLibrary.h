@@ -30,11 +30,11 @@ public:
 	static AMapManager* GetMapManagerActor(UObject* WorldContext);
 
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"))
-	static void AddPOI(FName NewPOI, UObject* WorldContext);
+	static void AddPOI(FName NewPOI, FVector POILocation, UObject* WorldContext);
 
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"))
 	static void RemovePOI(FName NewPOI, UObject* WorldContext);
 
-	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"))
-	static bool IsPOIDiscovered(FName POI, UObject* WorldContext);
+	/*UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"))
+	static bool IsPOIDiscovered(FName POI, UObject* WorldContext);*/
 };

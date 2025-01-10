@@ -9,10 +9,11 @@
 #include "FunctionLibraries/GameplayFunctionLibrary.h"
 #include "Structures/GameplayConstants.h"
 
-void UCompassIcon::SetupWidget(AActor* ActorRef, const FPOIConfigRow& Row)
+void UCompassIcon::SetupWidget(AActor* ActorRef, const FPOIConfigRow& Row, const FVector& POILocation)
 {
 	TargetActor = ActorRef;
 	MarkerData = Row;
+	MarkerData.Location = POILocation;
 	IconZOrder = Row.IconInfo->IconCompassZOrder;
 
 	if (Row.IconInfo && Row.IconInfo->Icon.ToSoftObjectPath().IsValid())

@@ -27,13 +27,16 @@ void AMapManager::Tick(float DeltaTime)
 
 }
 
+// trasformarlo in TMAP?
 void AMapManager::GetAllPOI(TArray<FPOIConfigRow>& POIConfig)
 {
 	UGameplayConstants* GameplayConstants = UGameplayFunctionLibrary::GetGameplayConstants(this);
 
 	if(GameplayConstants && GameplayConstants->POITable.LoadSynchronous())
 	{
-		for (FName POI : DiscoveredPOIs)
+		TArray<FName> DiscoveredPOIIDs {};
+		DiscoveredPOIs.GenerateKeyArray(DiscoveredPOIIDs);
+		for (FName POI : DiscoveredPOIIDs)
 		{
 			FPOIConfigRow* Row = GameplayConstants->POITable.LoadSynchronous()->FindRow<FPOIConfigRow>(POI, TEXT(""));
 
@@ -58,5 +61,15 @@ void AMapManager::GetAllPOI(TArray<FPOIConfigRow>& POIConfig)
 			}
 		}
 	}
+}
+
+FVector AMapManager::GetPOILocation(FName POIID)
+{
+	if (DiscoveredPOIs.Contains(POIID))
+	{
+		return DiscoveredPOIs[POIID];
+	}
+
+	return FVector();
 }
 

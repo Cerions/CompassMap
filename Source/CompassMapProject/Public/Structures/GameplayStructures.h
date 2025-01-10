@@ -42,7 +42,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DESIGN")
 		FName Type {};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DESIGN")
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DESIGN")
 		FVector Location = FVector();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DESIGN")
@@ -78,7 +78,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DESIGN")
 	bool bIsDynamic = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DESIGN", meta = (EditCondition = "bIsDynamic == false", EditConditionHides))
+	UPROPERTY(/*EditAnywhere, BlueprintReadWrite, Category = "DESIGN", meta = (EditCondition = "bIsDynamic == false", EditConditionHides)*/)
 	FVector Location = FVector::ZeroVector;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DESIGN")

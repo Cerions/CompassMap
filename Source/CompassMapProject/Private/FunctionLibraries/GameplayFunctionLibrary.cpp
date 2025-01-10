@@ -43,11 +43,11 @@ AMapManager* UGameplayFunctionLibrary::GetMapManagerActor(UObject* WorldContext)
 	return MapManagerActor;
 }
 
-void UGameplayFunctionLibrary::AddPOI(FName NewPOI, UObject* WorldContext)
+void UGameplayFunctionLibrary::AddPOI(FName NewPOI, FVector POILocation, UObject* WorldContext)
 {
 	if (AMapManager* MapManager = GetMapManagerActor(WorldContext))
 	{
-		MapManager->AddToDiscoveredPOIs(NewPOI);
+		MapManager->AddToDiscoveredPOIs(NewPOI, POILocation);
 	}
 }
 
@@ -59,13 +59,13 @@ void UGameplayFunctionLibrary::RemovePOI(FName NewPOI, UObject* WorldContext)
 	}
 }
 
-bool UGameplayFunctionLibrary::IsPOIDiscovered(FName POI, UObject* WorldContext)
-{
-	if (AMapManager* MapManager = GetMapManagerActor(WorldContext))
-	{
-		return MapManager->GetDiscoveredPOIs().Contains(POI);
-	}
-
-	return false;
-}
+//bool UGameplayFunctionLibrary::IsPOIDiscovered(FName POI, UObject* WorldContext)
+//{
+//	if (AMapManager* MapManager = GetMapManagerActor(WorldContext))
+//	{
+//		return MapManager->GetDiscoveredPOIs().Contains(POI);
+//	}
+//
+//	return false;
+//}
 

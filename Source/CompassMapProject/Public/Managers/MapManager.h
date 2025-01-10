@@ -27,22 +27,28 @@ public:
 	UFUNCTION()
 	void GetAllPOI(TArray<FPOIConfigRow>& POIConfig);
 
-	UFUNCTION()
-	TArray<FName> GetDiscoveredPOIs() { return DiscoveredPOIs; }
+	/*UFUNCTION()
+	TArray<FName> GetDiscoveredPOIs() { return DiscoveredPOIs; }*/
 
 	UFUNCTION()
 	TArray<FMarkerPosition> GetDynamicMarkers() { return DynamicMarkers; }
 
 	UFUNCTION()
-	void AddToDiscoveredPOIs(FName DiscoveredPOI) { DiscoveredPOIs.AddUnique(DiscoveredPOI); }
+	void AddToDiscoveredPOIs(FName DiscoveredPOI, FVector POILocation) { DiscoveredPOIs.Add(DiscoveredPOI, POILocation); }
 
 	UFUNCTION()
 	void RemoveFromDiscoveredPOIs(FName RemovedPOI) { DiscoveredPOIs.Remove(RemovedPOI); }
 
+	UFUNCTION()
+	FVector GetPOILocation(FName POIID);
+
 private:
 
+	//UPROPERTY()
+	//TArray<FName> DiscoveredPOIs {};
+
 	UPROPERTY()
-	TArray<FName> DiscoveredPOIs {};
+	TMap<FName, FVector> DiscoveredPOIs {};
 
 	UPROPERTY()
 	TArray<FMarkerPosition> DynamicMarkers {};

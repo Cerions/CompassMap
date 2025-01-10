@@ -10,6 +10,8 @@
 #include "UI/CompassIcon.h"
 #include "FunctionLibraries/GameplayFunctionLibrary.h"
 #include "Managers/MapManager.h"
+#include "FunctionLibraries/SingletonFunctionLibrary.h"
+#include "Managers/CMEventManager.h"
 
 void UCompassMap::NativeConstruct()
 {
@@ -28,15 +30,16 @@ void UCompassMap::NativeConstruct()
 		}
 	}
 
-	/*UEventManager* EventManager = USingletonFunctionLibrary::GetEventManager(this);
+	UCMEventManager* EventManager = USingletonFunctionLibrary::GetEventManager(this);
 
 	if (EventManager)
 	{
-		EventManager->OnPOIEnter.AddDynamic(this, &UCompassMap::UpdatePOIs);
+		EventManager->OnPOIsActivated.AddUniqueDynamic(this, &UCompassMap::OnPOIsActivated);
+		/*EventManager->OnPOIEnter.AddDynamic(this, &UCompassMap::UpdatePOIs);
 		EventManager->OnMarkerNotify.AddDynamic(this, &UCompassMap::UpdateMarkers);
 		EventManager->OnQuestAreaEnter.AddUniqueDynamic(this, &UCompassMap::OnQuestAreaEnter);
-		EventManager->OnQuestAreaLeave.AddUniqueDynamic(this, &UCompassMap::OnQuestAreaLeave);
-	}*/
+		EventManager->OnQuestAreaLeave.AddUniqueDynamic(this, &UCompassMap::OnQuestAreaLeave);*/
+	}
 }
 
 void UCompassMap::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -53,15 +56,16 @@ void UCompassMap::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 void UCompassMap::NativeDestruct()
 {
-	/*UEventManager* EventManager = USingletonFunctionLibrary::GetEventManager(this);
+	UCMEventManager* EventManager = USingletonFunctionLibrary::GetEventManager(this);
 
 	if (EventManager)
 	{
-		EventManager->OnPOIEnter.RemoveDynamic(this, &UCompassMap::UpdatePOIs);
+		EventManager->OnPOIsActivated.RemoveDynamic(this, &UCompassMap::OnPOIsActivated);
+		/*EventManager->OnPOIEnter.RemoveDynamic(this, &UCompassMap::UpdatePOIs);
 		EventManager->OnMarkerNotify.RemoveDynamic(this, &UCompassMap::UpdateMarkers);
 		EventManager->OnQuestAreaEnter.RemoveDynamic(this, &UCompassMap::OnQuestAreaEnter);
-		EventManager->OnQuestAreaLeave.RemoveDynamic(this, &UCompassMap::OnQuestAreaLeave);
-	}*/
+		EventManager->OnQuestAreaLeave.RemoveDynamic(this, &UCompassMap::OnQuestAreaLeave);*/
+	}
 
 	Super::NativeDestruct();
 }
@@ -126,22 +130,22 @@ void UCompassMap::UpdateMarkerPosition()
 			{
 				if (!IconToCheck->IsVisible()) continue;
 				bool bHideIconToCheck = false;
-				for (UCompassIcon* IconTocomparison : CompassIcons)
+				for (UCompassIcon* IconToComparison : CompassIcons)
 				{
-					if (IconToCheck == IconTocomparison || (!IconTocomparison->IsVisible())) continue;
+					if (IconToCheck == IconToComparison || (!IconToComparison->IsVisible())) continue;
 
-					float Diff = IconToCheck->GetRenderTransform().Translation.X - IconTocomparison->GetRenderTransform().Translation.X;
+					float Diff = IconToCheck->GetRenderTransform().Translation.X - IconToComparison->GetRenderTransform().Translation.X;
 					if (abs(Diff) <= OverlapDifferenceValue)
 					{
-						if (IconToCheck->GetIconZOrder() == IconTocomparison->GetIconZOrder())
+						if (IconToCheck->GetIconZOrder() == IconToComparison->GetIconZOrder())
 						{
-							bHideIconToCheck = IconToCheck->GetDistanceFromPlayer() >= IconTocomparison->GetDistanceFromPlayer();
+							bHideIconToCheck = IconToCheck->GetDistanceFromPlayer() >= IconToComparison->GetDistanceFromPlayer();
 						}
 						else
 						{
-							bHideIconToCheck = IconToCheck->GetIconZOrder() < IconTocomparison->GetIconZOrder();
+							bHideIconToCheck = IconToCheck->GetIconZOrder() < IconToComparison->GetIconZOrder();
 						}
-						IconTocomparison->DisableDistanceText(!bHideIconToCheck);
+						IconToComparison->DisableDistanceText(!bHideIconToCheck);
 					}
 				}
 				IconToCheck->DisableDistanceText(bHideIconToCheck);
@@ -178,6 +182,20 @@ float UCompassMap::GetScreenLocation(FVector TargetLocation)
 	return 0.f;
 }
 
+void UCompassMap::OnPOIsActivated()
+{
+	MapManager = UGameplayFunctionLibrary::GetMapManagerActor(GetWorld());
+	if (MapManager)
+	{
+		TArray<FPOIConfigRow> POIs{};
+		MapManager->GetAllPOI(POIs);
+		for (FPOIConfigRow POI : POIs)
+		{
+			CreateMarker(POI);
+		}
+	}
+}
+
 void UCompassMap::UpdatePOIs(const FPOIConfigRow& POI, bool NewDiscovery)
 {
 	if (POI.IconInfo && POI.IconInfo->MarkerType != EMarkerType::OnlyMap)
@@ -209,27 +227,37 @@ void UCompassMap::CreateMarker(const FPOIConfigRow& Row)
 		if (Create)
 		{
 			UCompassIcon* CompassIconRef = CreateWidget<UCompassIcon>(GetWorld(), CompassIconClass);
-			CompassIconRef->SetupWidget(OwnerWidget, Row);
-			HiddenPOI.Contains(CompassIconRef->MarkerData.Id) ? CompassIconRef->SetRenderOpacity(0.f) : CompassIconRef->SetRenderOpacity(1.f);
-			CompassIcons.Add(CompassIconRef);
-			UPanelSlot* PanelSlot = MarkerContainer->AddChild(CompassIconRef);
-			UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(PanelSlot);
-			if (CanvasSlot)
+			if (CompassIconRef)
 			{
-				FVector2D MiddleVector2d = FVector2D(.5f, .5f);
-				CanvasSlot->SetAlignment(MiddleVector2d);
-				FAnchors Anchors = FAnchors();
-				Anchors.Maximum = MiddleVector2d;
-				Anchors.Minimum = MiddleVector2d;
-				CanvasSlot->SetAnchors(Anchors);
-				CanvasSlot->SetZOrder(Row.IconInfo->IconCompassZOrder);
-				UCanvasPanelSlot* ContainerSlot = Cast<UCanvasPanelSlot>(MarkerContainer->Slot);
-				if (ContainerSlot)
+				MapManager = UGameplayFunctionLibrary::GetMapManagerActor(GetWorld());
+				if (MapManager)
 				{
-					FVector2D ContainerSize = ContainerSlot->GetSize();
-					CanvasSlot->SetSize(FVector2D(ContainerSize.Y, ContainerSize.Y));
+					CompassIconRef->SetupWidget(OwnerWidget, Row, MapManager->GetPOILocation(Row.Id));
+					HiddenPOI.Contains(CompassIconRef->MarkerData.Id) ? CompassIconRef->SetRenderOpacity(0.f) : CompassIconRef->SetRenderOpacity(1.f);
+					CompassIcons.Add(CompassIconRef);
+					UPanelSlot* PanelSlot = MarkerContainer->AddChild(CompassIconRef);
+					if (PanelSlot)
+					{
+						UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(PanelSlot);
+						if (CanvasSlot)
+						{
+							FVector2D MiddleVector2d = FVector2D(.5f, .5f);
+							CanvasSlot->SetAlignment(MiddleVector2d);
+							FAnchors Anchors = FAnchors();
+							Anchors.Maximum = MiddleVector2d;
+							Anchors.Minimum = MiddleVector2d;
+							CanvasSlot->SetAnchors(Anchors);
+							CanvasSlot->SetZOrder(Row.IconInfo->IconCompassZOrder);
+							UCanvasPanelSlot* ContainerSlot = Cast<UCanvasPanelSlot>(MarkerContainer->Slot);
+							if (ContainerSlot)
+							{
+								FVector2D ContainerSize = ContainerSlot->GetSize();
+								CanvasSlot->SetSize(FVector2D(ContainerSize.Y, ContainerSize.Y));
+							}
+						}
+					}					
 				}
-			}
+			}			
 		}
 	}
 }

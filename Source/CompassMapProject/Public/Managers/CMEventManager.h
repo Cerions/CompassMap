@@ -10,6 +10,7 @@ class UCMGameInstance;
 class ACompassMapProjectCharacter;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterRefSet, ACompassMapProjectCharacter*, PC);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPOIsActivated);
 
 /**
  * 
@@ -27,6 +28,9 @@ public:
 
 	void OnCharacterRefSetEvent(ACompassMapProjectCharacter* PC);
 	FOnCharacterRefSet OnCharacterRefSet;
+
+	void OnPOIsActivatedEvent();
+	FOnPOIsActivated OnPOIsActivated;
 
 protected:
 
